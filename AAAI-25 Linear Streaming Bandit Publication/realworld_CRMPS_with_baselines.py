@@ -6,9 +6,7 @@ plt.rcParams.update({'font.size': 12})
 matrix_file_path = r'./data/employee_matrix.npy'
 
 X = np.load(matrix_file_path)
-
 d = len(X[0, :])
-#
 K = 10000
 
 
@@ -47,6 +45,7 @@ sigma = 0.15
 
 # Define the algorithms
 
+
 def run_CR_MPS(high_value):
 
     # the algorithm starts
@@ -72,7 +71,6 @@ def run_CR_MPS(high_value):
         value *= eps_0**(- (2**(b-1)-1) / (2**(b-1)))
         eps_list[b] = value
     eps_list[0] = eps_0
-
 
     # begin scanning the pass
 
@@ -217,8 +215,6 @@ def run_Li(high_value):
         beta = (2**(B-p) * (2**p - 1)) / (2**(B+1)-1)
         b = ((T * B)**(2 * beta)) * K**(-2 * beta)
 
-    
-
         ind = 1
         while ind < K and t <= T:
             while n_x <= b or n_y <= b:
@@ -226,35 +222,34 @@ def run_Li(high_value):
                 flip = np.random.rand()
                 tag = "y"
                 a = None
-                if n_x < n_y or (abs(n_x-n_y) < 0.01 and flip < 0.5 ):
+                if n_x < n_y or (abs(n_x-n_y) < 0.01 and flip < 0.5):
                     tag = "x"
                 if tag == "y":
                     a = Arm_Stream[:, y]
                     r_t = a @ theta_star + sigma * np.random.randn()
-                    r_y_bar = (r_y_bar * n_y + r_t  ) / (n_y + 1)
+                    r_y_bar = (r_y_bar * n_y + r_t) / (n_y + 1)
                     n_y += 1
                 else:
                     a = Arm_Stream[:, x]
                     r_t = a @ theta_star + sigma * np.random.randn()
-                    r_x_bar = (r_x_bar * n_x + r_t  ) / (n_x + 1)
+                    r_x_bar = (r_x_bar * n_x + r_t) / (n_x + 1)
                     n_x += 1
-                
+
                 if t <= T:
                     regret[t] = regret[t-1] + high_value - (theta_star @ a)
                     t += 1
                 else:
                     break
 
-                
-                if n_x > 0.5 and n_y > 0.5 and  r_x_bar + sigma * np.sqrt( (5 * np.log(T))/n_x )  <  r_y_bar - sigma * np.sqrt( (5 * np.log(T))/n_y ) :
+                if n_x > 0.5 and n_y > 0.5 and r_x_bar + sigma * np.sqrt((5 * np.log(T))/n_x) < r_y_bar - sigma * np.sqrt((5 * np.log(T))/n_y):
                     break
-                elif n_x > 0.5 and n_y > 0.5 and  r_y_bar + sigma * np.sqrt( (5 * np.log(T))/n_y )  <  r_x_bar - sigma * np.sqrt( (5 * np.log(T))/n_x ) :
-                    y = x 
+                elif n_x > 0.5 and n_y > 0.5 and r_y_bar + sigma * np.sqrt((5 * np.log(T))/n_y) < r_x_bar - sigma * np.sqrt((5 * np.log(T))/n_x):
+                    y = x
                     r_y_bar = r_x_bar
                     n_y = n_x
                     break
 
-            # read a new x from the arm stream    
+            # read a new x from the arm stream
             x = order[ind]
             ind += 1
             r_x_bar = 0.0
@@ -270,9 +265,7 @@ def run_Li(high_value):
     return regret
 
 
-
 # Parameters for the figure
-
 rows = 1
 cols = 1
 line_width = 1.8
@@ -297,16 +290,17 @@ for i in range(N):
     cur_regret = run_Li(high_value)
     regret_Li += cur_regret
 
-    
-    
 
 regret_CR_MPS /= N
 regret_Ag /= N
 regret_Li /= N
 
-axs.plot(np.arange(1, 1 + T), regret_CR_MPS[1:], linewidth=line_width, label=r"CR-MPS (Our Approach)" )
-axs.plot(np.arange(1, 1 + T), regret_Ag[1:], linewidth=line_width, label=r"MBSE (Agarwal et al., 2022)" )
-axs.plot(np.arange(1, 1 + T), regret_Li[1:], linewidth=line_width, label=r"MPSE (Li et al., 2023)" )
+axs.plot(np.arange(1, 1 + T),
+         regret_CR_MPS[1:], linewidth=line_width, label=r"CR-MPS (Our Approach)")
+axs.plot(np.arange(1, 1 + T),
+         regret_Ag[1:], linewidth=line_width, label=r"MBSE (Agarwal et al., 2022)")
+axs.plot(np.arange(1, 1 + T),
+         regret_Li[1:], linewidth=line_width, label=r"MPSE (Li et al., 2023)")
 
 axs.set_xlabel(r"Time horizon $T$")
 axs.set_ylabel(r"Cumulative Regret")

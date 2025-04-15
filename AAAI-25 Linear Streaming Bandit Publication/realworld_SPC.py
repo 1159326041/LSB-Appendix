@@ -3,9 +3,7 @@ import matplotlib.pyplot as plt
 
 # Load the matrix from .npy files
 matrix_file_path = r'.\data\employee_matrix.npy'
-
 X = np.load(matrix_file_path)
-
 d = len(X[0, :])
 #
 #
@@ -25,7 +23,6 @@ for i in range(d):
 Arm_Stream = Arm_Stream.T
 
 
-
 # Set up the parameters for the involved algorithms
 
 N = 500
@@ -34,10 +31,10 @@ sigma = 0.15
 
 # Define the algorithms
 
+
 def SPC(K, T):
     # parameters
     eta = 1
-
     precision = np.sqrt(2 * d * np.log(1 + T*L*L/(eta * d)) / T) * 0.7
 
     # begin scanning
@@ -61,16 +58,14 @@ def SPC(K, T):
 
     return a_hat, t - 1
 
+
 K_list = [5000, 10000, 15000]
 T_list = [1000, 3000, 5000, 8000]
 
 # Figure details
 #
 
-
-
-
-error_rate = np.zeros( ( len(K_list), len(T_list) ) )
+error_rate = np.zeros((len(K_list), len(T_list)))
 
 for k in range(len(K_list)):
     K = K_list[k]
@@ -82,7 +77,7 @@ for k in range(len(K_list)):
         cur_value = a @ theta_star
         high_value = max(high_value, cur_value)
 
-    for t in range(len(T_list) ):
+    for t in range(len(T_list)):
         T = T_list[t]
         cnt = 0.0
 
@@ -92,13 +87,9 @@ for k in range(len(K_list)):
             error = high_value - a_hat @ theta_star
             if error > 1e-5:
                 cnt += 1
-        
-   
+
         error_rate[k, t] = cnt / N
-        print("     error rate = ", cnt / N )
+        print("     error rate = ", cnt / N)
 print("T list: ", T_list)
 print("K list: ", K_list)
 print("Error probability: \n", error_rate)
-
-
-

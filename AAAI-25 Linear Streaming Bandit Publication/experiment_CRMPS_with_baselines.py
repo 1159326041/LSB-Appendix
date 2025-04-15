@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 plt.rcParams.update({'font.size': 12})
 
+
 def run_CR_MPS(K, d, sigma, B, T, L, S, delta, Lambda, theta_star, Arm_Stream):
 
     # first compute the true optimal arm and its sample mean
@@ -178,7 +179,6 @@ def run_Li(K, d, sigma, B, T, theta_star, Arm_Stream):
     y = -1
     r_y_bar = 0.0
     n_y = 0.0
-
     t = 1
 
     for p in range(1, 1 + B):
@@ -192,8 +192,6 @@ def run_Li(K, d, sigma, B, T, theta_star, Arm_Stream):
         beta = (2**(B-p) * (2**p - 1)) / (2**(B+1)-1)
         b = ((T * B)**(2 * beta)) * K**(-2 * beta)
 
-    
-
         ind = 1
         while ind < K and t <= T:
             while n_x <= b or n_y <= b:
@@ -201,35 +199,34 @@ def run_Li(K, d, sigma, B, T, theta_star, Arm_Stream):
                 flip = np.random.rand()
                 tag = "y"
                 a = None
-                if n_x < n_y or (abs(n_x-n_y) < 0.01 and flip < 0.5 ):
+                if n_x < n_y or (abs(n_x-n_y) < 0.01 and flip < 0.5):
                     tag = "x"
                 if tag == "y":
                     a = Arm_Stream[:, y]
                     r_t = a @ theta_star + sigma * np.random.randn()
-                    r_y_bar = (r_y_bar * n_y + r_t  ) / (n_y + 1)
+                    r_y_bar = (r_y_bar * n_y + r_t) / (n_y + 1)
                     n_y += 1
                 else:
                     a = Arm_Stream[:, x]
                     r_t = a @ theta_star + sigma * np.random.randn()
-                    r_x_bar = (r_x_bar * n_x + r_t  ) / (n_x + 1)
+                    r_x_bar = (r_x_bar * n_x + r_t) / (n_x + 1)
                     n_x += 1
-                
+
                 if t <= T:
                     regret[t] = regret[t-1] + high_value - (theta_star @ a)
                     t += 1
                 else:
                     break
 
-                
-                if n_x > 0.5 and n_y > 0.5 and  r_x_bar + sigma * np.sqrt( (5 * np.log(T))/n_x )  <  r_y_bar - sigma * np.sqrt( (5 * np.log(T))/n_y ) :
+                if n_x > 0.5 and n_y > 0.5 and r_x_bar + sigma * np.sqrt((5 * np.log(T))/n_x) < r_y_bar - sigma * np.sqrt((5 * np.log(T))/n_y):
                     break
-                elif n_x > 0.5 and n_y > 0.5 and  r_y_bar + sigma * np.sqrt( (5 * np.log(T))/n_y )  <  r_x_bar - sigma * np.sqrt( (5 * np.log(T))/n_x ) :
-                    y = x 
+                elif n_x > 0.5 and n_y > 0.5 and r_y_bar + sigma * np.sqrt((5 * np.log(T))/n_y) < r_x_bar - sigma * np.sqrt((5 * np.log(T))/n_x):
+                    y = x
                     r_y_bar = r_x_bar
                     n_y = n_x
                     break
 
-            # read a new x from the arm stream    
+            # read a new x from the arm stream
             x = order[ind]
             ind += 1
             r_x_bar = 0.0
@@ -248,19 +245,15 @@ def run_Li(K, d, sigma, B, T, theta_star, Arm_Stream):
 def varying_K():
     print("CR-MPS regret with baselines")
 
-    N = 20 # 20
+    N = 20  # 20
     d = 5
     sigma = 0.1  # 0.3
     delta = 1e-1
     Lambda = 0.1
-
-    L = 0.7  
-    S = 1 * np.sqrt(d)  
-
+    L = 0.7
+    S = 1 * np.sqrt(d)
     M = 20
-
     B = 5
-
     T = 300000
     K_list = [50, 500, 5000]
 
@@ -273,9 +266,10 @@ def varying_K():
 
     line_width = 1.8
 
-    fig, axs = plt.subplots(rows, cols, figsize=(cols * subplot_width, rows * subplot_height))
+    fig, axs = plt.subplots(rows, cols, figsize=(
+        cols * subplot_width, rows * subplot_height))
     ylim_list = [6000, 8000, 10000]
-    
+
     for k in range(len(K_list)):
         regret_CR_MPS = np.zeros(1 + T)
         max_regret_CR_MPS = - 1e5 * np.ones(1 + T)
@@ -288,28 +282,31 @@ def varying_K():
         regret_Li = np.zeros(1 + T)
         max_regret_Li = - 1e5 * np.ones(1 + T)
         min_regret_Li = 1e5 * np.ones(1 + T)
-        
+
         K = K_list[k]
 
         for i in range(N):
             theta_star = 4 * np.random.rand(d)  #
             Arm_Stream = (
-                    0.16 * np.random.rand(d, K) + 0.19)*2/np.sqrt(d)
-                # 
-                #
+                0.16 * np.random.rand(d, K) + 0.19)*2/np.sqrt(d)
+            #
+            #
             print("K=%d, ite=%d/%d" % (K, i+1, N))
-            cur_regret = run_CR_MPS(K=K, d=d, sigma=sigma, B=B, T=T, L=L, S=S, delta=delta, Lambda=Lambda, theta_star=theta_star, Arm_Stream=Arm_Stream)
+            cur_regret = run_CR_MPS(K=K, d=d, sigma=sigma, B=B, T=T, L=L, S=S, delta=delta,
+                                    Lambda=Lambda, theta_star=theta_star, Arm_Stream=Arm_Stream)
 
             regret_CR_MPS += cur_regret
 
             #
             #
 
-            cur_regret = run_Agarwal(M=M, K=K, d=d, sigma=sigma, B=B, T=T, theta_star=theta_star, Arm_Stream=Arm_Stream)
+            cur_regret = run_Agarwal(
+                M=M, K=K, d=d, sigma=sigma, B=B, T=T, theta_star=theta_star, Arm_Stream=Arm_Stream)
 
             regret_Ag += cur_regret
 
-            cur_regret = run_Li(K=K, d=d, sigma=sigma, B=B, T=T, theta_star=theta_star, Arm_Stream=Arm_Stream)
+            cur_regret = run_Li(K=K, d=d, sigma=sigma, B=B, T=T,
+                                theta_star=theta_star, Arm_Stream=Arm_Stream)
 
             regret_Li += cur_regret
 
@@ -317,17 +314,15 @@ def varying_K():
         regret_Ag /= N
         regret_Li /= N
 
-       
-    
         axs[k].plot(np.arange(1, 1+T),
-                regret_CR_MPS[1:], linewidth=line_width, label=r"CR-MPS (Our Approach)")
+                    regret_CR_MPS[1:], linewidth=line_width, label=r"CR-MPS (Our Approach)")
         #
 
         axs[k].plot(np.arange(1, 1+T),  regret_Ag[1:], linewidth=line_width,
-                label=r"MBSE (Agarwal et al., 2022)")
+                    label=r"MBSE (Agarwal et al., 2022)")
 
         axs[k].plot(np.arange(1, 1+T),  regret_Li[1:], linewidth=line_width,
-                label=r"MPSE (Li et al., 2023)")
+                    label=r"MPSE (Li et al., 2023)")
 
         axs[k].set_xlabel(r"Time horizon $T$")
         axs[k].set_ylabel(r"Cumulative Regret")

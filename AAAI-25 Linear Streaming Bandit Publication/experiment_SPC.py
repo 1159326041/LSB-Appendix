@@ -7,7 +7,6 @@ def run(K, d, sigma, T, L, theta_star, Arm_Stream):
     def SPC(T):
         # parameters
         eta = 1
-
         precision = np.sqrt(2 * d * np.log(1 + T*L*L/(eta * d)) / T) * 0.7
 
         # begin scanning
@@ -51,7 +50,6 @@ def varying_K():
     N = 500
     d = 5
     sigma = 4
-
     L = 0.7
 
     T_list = [10000, 20000, 30000, 50000]
@@ -68,7 +66,7 @@ def varying_K():
                 theta_star = 4 * np.random.rand(d)
                 Arm_Stream = (
                     0.16 * np.random.rand(d, K) + 0.19)*2/np.sqrt(d)
-                opt_arm = 0.319 * np.ones(d)  # 
+                opt_arm = 0.319 * np.ones(d)  #
                 Arm_Stream[:, 0] = opt_arm
                 print("K=%d, ite=%d/%d" % (K, i+1, N))
                 pred_value, low_value, high_value = run(
@@ -83,8 +81,6 @@ def varying_K():
     print("T list: ", T_list)
     print("K list: ", K_list)
     print(record)
-
-    
 
 
 varying_K()
